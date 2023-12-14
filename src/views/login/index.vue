@@ -152,10 +152,16 @@ export default {
         this.$refs.password.focus()
       })
     },
+    /**
+     * 处理登录请求
+     */
     handleLogin() {
+      //进行表单验证
       this.$refs.loginForm.validate(valid => {
+        // 如果表单验证通过
         if (valid) {
-          this.loading = true
+          this.loading = true; // 显示加载动画
+          // 发送登录请求 （调用Vuex中哦的user/login 方法）
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
