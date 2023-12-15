@@ -1,29 +1,26 @@
-import request from '@/utils/request'
+import http from '@/utils/request'
 
 /**
  * 用户登录方法
  * @param  data
  * @returns
  */
-export function login(data) {
-  return request({
-    url: '/vue-element-admin/user/login',
-    method: 'post',
-    data
-  })
+export async function login(data) {
+  return await http.login("/api/user/login",data);
+}
+/**
+ * 获取登录用户信息
+ * @param token
+ * @returns
+ */
+export async function getInfo() {
+  return await http.get("/api/sysUser/getInfo");
 }
 
-export function getInfo(token) {
-  return request({
-    url: '/vue-element-admin/user/info',
-    method: 'get',
-    params: { token }
-  })
-}
-
+/**
+ * 退出登录
+ * @returns
+ */
 export function logout() {
-  return request({
-    url: '/vue-element-admin/user/logout',
-    method: 'post'
-  })
+  return
 }
