@@ -21,6 +21,6 @@ export async function getInfo() {
  * 退出登录
  * @returns
  */
-export function logout() {
-  return
+export async function logout(params) {
+  return await http.post("/api/sysUser/logout",params);
 }
