@@ -78,12 +78,11 @@ export default {
     /**
      * 用户退出登录
      */
-    logout() {
-      this.$confirm("确定要退出系统吗?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }).then(async () => {
+    async logout() {
+      // 确认提示
+      let confirm = await this.$myconfirm("确认退出系统?");
+      // 是否确认
+      if (confirm) {
         // 封装请求参数
         let params = { token: getToken() };
         // 发送退出请求
@@ -94,9 +93,9 @@ export default {
           removeToken();
           clearStorage();
           // 跳转到登录也秒你
-          window.location.href="/login";
+          window.location.href = "/login";
         }
-      });
+      }
     },
   },
 };

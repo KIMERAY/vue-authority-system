@@ -20,6 +20,10 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+//导入封装信息确认提示框组件脚本
+import myconfirm from '@/utils/myconfirm'
+Vue.prototype.$myconfirm = myconfirm;
+
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
   locale: enLang // 如果使用中文，无需设置，请删除
