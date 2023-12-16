@@ -1,7 +1,9 @@
 // 导入路由脚本文件中的属性
-import { asyncRoutes, constantRoutes } from "@/router";
+import { constantRoutes } from "@/router";
 // 导入获取菜单数据的方法
 import { getMenuList } from "@/api/user";
+// 导入Layout组件
+import Layout from "@/layout";
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -28,7 +30,22 @@ export function filterAsyncRoutes(routes, roles) {
 
   routes.forEach((route) => {
     const tmp = { ...route };
+
+    // 判断是否拥有相应的权限
     if (hasPermission(roles, tmp)) {
+      // 获取该路由对应的组件
+      let component = tmp.component;
+      // 判断是否有相应的根组件
+      if (route.component) {
+        // 判断是否有根组件
+        if (component === "Layout") {
+          tmp.component = Layout;
+        } else {
+          // 获取对应具体的组件信息
+          tmp.component = (resolve) => require([`@/views${component}`], resolve);
+        }
+      }
+      // 判断是否有子菜单
       if (tmp.children) {
         tmp.children = filterAsyncRoutes(tmp.children, roles);
       }
