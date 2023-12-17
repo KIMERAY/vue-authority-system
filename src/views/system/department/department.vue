@@ -51,15 +51,36 @@
 </template>
 
 <script>
+// 导入department脚本文件
+import departmentApi from '@/api/department';
+
 export default {
   name: "department",
+
   data() {
     return {
       departmentName: "", // 部门名称
       tableData: [], // 表格数据
     };
   },
-  methods: {},
+  // 初始化时调用
+  created(){
+    // 调用查询部门列表
+    this.search();
+  },
+  methods: {
+    /**
+     * 查询部门列表
+     */
+    async search(){
+      // 发送查询请求
+      let res=await departmentApi.getDepartmentList(this.departmentName);
+      // 判断是否成功
+      if(res.success){
+        this.tableData=res.data;
+      }
+    }
+  },
 };
 </script>
 <style lang="scss" scoped></style>
