@@ -8,7 +8,9 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search">查询按钮</el-button>
         <el-button icon="el-icon-refresh-right">重置</el-button>
-        <el-button type="success" icon="el-icon-plus">新增</el-button>
+        <el-button type="success" icon="el-icon-plus" @click="openAddWindow()"
+          >新增</el-button
+        >
       </el-form-item>
     </el-form>
 
@@ -38,33 +40,108 @@
       <el-table-column prop="address" label="部门地址" />
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" icon="el-icon-edit-outline" @click="handleEdit(scope.row)"
+          <el-button
+            size="mini"
+            type="primary"
+            icon="el-icon-edit-outline"
+            @click="handleEdit(scope.row)"
             >编辑</el-button
           >
-          <el-button size="mini" type="danger" icon="el-icon-delete-solid" @click="handleDelete(scope.row)"
+          <el-button
+            size="mini"
+            type="danger"
+            icon="el-icon-delete-solid"
+            @click="handleDelete(scope.row)"
             >删除</el-button
           >
         </template>
       </el-table-column>
     </el-table>
+    <!-- 添加和修改窗口 -->
+    <system-dialog
+      :title="deptDialog.title"
+      :visible="deptDialog.visible"
+      :width="deptDialog.width"
+      :height="deptDialog.height"
+      @onClose="onClose()"
+      @onConfirm="onConfirm()"
+    >
+      <div slot="content">
+        <el-form
+          :model="dept"
+          ref="deptForm"
+          :rules="rules"
+          label-width="80px"
+          :inline="true"
+          size="small"
+        >
+          <el-form-item label="所属部门" prop="parentName">
+            <el-input v-model="dept.parentName"></el-input>
+          </el-form-item>
+          <el-form-item label="部门名称" prop="departmentName">
+            <el-input v-model="dept.departmentName"></el-input>
+          </el-form-item>
+          <el-form-item label="部门电话">
+            <el-input v-model="dept.phone"></el-input>
+          </el-form-item>
+          <el-form-item label="部门地址">
+            <el-input v-model="dept.address"></el-input>
+          </el-form-item>
+          <el-form-item label="序号">
+            <el-input v-model="dept.orderNum"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+    </system-dialog>
   </el-main>
 </template>
 
 <script>
 // 导入department脚本文件
-import departmentApi from '@/api/department';
+import departmentApi from "@/api/department";
+// 导入SystemDialog组件
+import SystemDialog from "@/components/system/SystemDialog.vue";
+import { pid } from "process";
 
 export default {
   name: "department",
-
+  // 注册组件
+  components: {
+    SystemDialog,
+  },
   data() {
     return {
       departmentName: "", // 部门名称
       tableData: [], // 表格数据
+      deptDialog: {
+        title: "560", // 窗口标题
+        visible: false, // 是否显示窗口
+        width: 560, // 窗口宽度
+        height: 170, // 窗口高度
+      },
+      dept: {
+        id: "", //部门编号
+        departmentName: "", //部门名称
+        pid: "", //所属部门id
+        parentName: "", //所属部门名称
+
+        phone: "", //电话
+        address: "", //地址
+        orderNum: "", //序号
+      },
+      // 表单验证规则
+      rules: {
+        parentName: [
+          { required: true, message: "请选择所属部门", trigger: "change" },
+        ],
+        departmentName: [
+          { required: true, message: "请输入部门名称", trigger: "blur" },
+        ],
+      },
     };
   },
   // 初始化时调用
-  created(){
+  created() {
     // 调用查询部门列表
     this.search();
   },
@@ -72,14 +149,36 @@ export default {
     /**
      * 查询部门列表
      */
-    async search(){
+    async search() {
       // 发送查询请求
-      let res=await departmentApi.getDepartmentList(this.departmentName);
+      let res = await departmentApi.getDepartmentList(this.departmentName);
       // 判断是否成功
-      if(res.success){
-        this.tableData=res.data;
+      if (res.success) {
+        this.tableData = res.data;
       }
-    }
+    },
+    /**
+     * 打开添加窗口
+     */
+    openAddWindow() {
+      // 设置窗口属性
+      this.deptDialog.title = "新增部门";
+      this.deptDialog.visible = true;
+    },
+    /**
+     * 窗口关闭事件
+     */
+    onClose() {
+      // 关闭窗口
+      this.deptDialog.visible = false;
+    },
+    /**
+     * 窗口确认事件
+     */
+    onConfirm() {
+      // 关闭窗口
+      this.deptDialog.visible = false;
+    },
   },
 };
 </script>
