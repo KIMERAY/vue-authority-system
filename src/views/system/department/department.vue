@@ -217,6 +217,9 @@ export default {
      * 打开添加窗口
      */
     openAddWindow() {
+      // 清空表单数据
+
+      this.$resetForm("deptForm", this.dept);
       // 设置窗口属性
       this.deptDialog.title = "新增部门";
       this.deptDialog.visible = true;
