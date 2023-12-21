@@ -235,6 +235,28 @@ export default {
      * 窗口确认事件
      */
     onConfirm() {
+      // 进行表单验证
+      this.$refs.deptForm.validate(async (valid) => {
+        // 如果验证通过哦
+        if (valid) {
+          // 发送添加请求
+          let res = await departmentApi.addDept(this.dept);
+          // 判断是否成功
+          if (res.success) {
+            // 提示成功
+            this.$message.success(res.message);
+            // 刷新数据
+            this.search();
+            // 关闭窗口
+            this.deptDialog.visible = false;
+          } else {
+            // 提示失败
+            this.$message.error(res.message);
+          }
+          // 关闭窗口
+          this.deptDialog.visible = false;
+        }
+      });
       // 关闭窗口
       this.deptDialog.visible = false;
     },
@@ -265,8 +287,8 @@ export default {
      * @param data
      */
     handleNodeClike(data) {
-      // 将选中的部门复制给dept对象
-      this.dept.id = data.id;
+      // 将选中的部门赋值给dept对象
+      this.dept.pid = data.id;
       this.dept.parentName = data.departmentName;
     },
     /**
