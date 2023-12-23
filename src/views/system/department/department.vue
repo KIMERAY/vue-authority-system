@@ -324,6 +324,37 @@ export default {
       // 显示窗口
       this.deptDialog.visible = true;
     },
+
+    /**
+     * 删除部门
+     * @param row
+     */
+    async handleDelete(row) {
+      // 查询部门下是否存在子部门或用户
+      let reslut = await departmentApi.checkDepartment({ id: row.id });
+      // 判断是否可以删除
+      if (!reslut.success) {
+        // 提示不能删除
+        this.$message.warning(reslut.message);
+      } else {
+        // 确认是否删除
+        let confirm = await this.$myconfirm("确定要删除该数据吗?");
+        if (confirm) {
+          // 发送删除请求
+          let res = await departmentApi.deleteById({ id: row.id });
+          //判断是否成功
+          if (res.success) {
+            //成功提示
+            this.$message.success(res.message);
+            //刷新
+            this.search();
+          } else {
+            //失败提示
+            this.$message.error(res.message);
+          }
+        }
+      }
+    },
   },
 };
 </script>
