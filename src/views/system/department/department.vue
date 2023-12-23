@@ -240,7 +240,15 @@ export default {
         // 如果验证通过哦
         if (valid) {
           // 发送添加请求
-          let res = await departmentApi.addDept(this.dept);
+          let res = null;
+          // 判断当前是新增还是修改（依据：判断当前dept对象的id属性是否为空）
+          // 发送新增请求
+          if (this.dept.id === "") {
+            res = await departmentApi.addDept(this.dept);
+          } else {
+            // 发送修改请求
+            res = await departmentApi.updateDept(this.dept);
+          }
           // 判断是否成功
           if (res.success) {
             // 提示成功
@@ -302,6 +310,19 @@ export default {
      */
     onParentConfirm() {
       this.parentDialog.visible = false;
+    },
+
+    /**
+     * 编辑部门
+     * @param row
+     */
+    handleEdit(row) {
+      // 数据回显
+      this.$objCopy(row, this.dept);
+      // 设置窗口标题
+      this.deptDialog.title = "编辑部门";
+      // 显示窗口
+      this.deptDialog.visible = true;
     },
   },
 };

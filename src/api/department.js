@@ -26,4 +26,13 @@ export default {
   async addDept(params) {
     return await http.post("/api/department/add", params);
   },
+
+  /**
+   * 编辑部门
+   * @param params
+   * @returns
+   */
+  async updateDept(params) {
+    return await http.put("/api/department/update", params);
+  },
 };

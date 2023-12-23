@@ -28,6 +28,10 @@ Vue.prototype.$myconfirm = myconfirm;
 import resetForm from '@/utils/resetForm'
 Vue.prototype.$resetForm = resetForm;
 
+//导入表单数据回显脚本
+import objCopy from '@/utils/objCopy'
+Vue.prototype.$objCopy = objCopy;
+
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
   // locale: enLang // 如果使用中文，无需设置，请删除
