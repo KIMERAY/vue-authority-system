@@ -69,7 +69,11 @@
             </el-form-item>
           </el-col>
           <el-form-item label="所属菜单" size="small" prop="parentName">
-            <el-input v-model="menu.parentName" :readonly="true" />
+            <el-input
+              v-model="menu.parentName"
+              :readonly="true"
+              @click.native="selectParentMenu()"
+            />
           </el-form-item>
           <el-form-item label="菜单名称" size="small" prop="label">
             <el-input v-model="menu.label" />
@@ -108,6 +112,47 @@
             <el-input v-model="menu.orderNum" />
           </el-form-item>
         </el-form>
+      </div>
+    </system-dialog>
+
+    <!-- 选择所属菜单弹框 -->
+    <system-dialog
+      :title="parentDialog.title"
+      :width="parentDialog.width"
+      :height="parentDialog.height"
+      :visible="parentDialog.visible"
+      @onClose="onParentClose"
+      @onConfirm="onParentConfirm"
+    >
+      <div slot="content">
+        <el-tree
+          style="font-size: 14px"
+          ref="parentTree"
+          :data="parentMenuList"
+          node-key="id"
+          :props="defaultProps"
+          empty-text="暂无数据"
+          :show-checkbox="false"
+          default-expand-all
+          :highlight-current="true"
+          :expand-on-click-node="false"
+          @node-click="handleNodeClick"
+        >
+          <div class="customer-tree-node" slot-scope="{ node, data }">
+            <!-- 长度为0说明没有下级 -->
+            <span v-if="data.children.length == 0">
+              <i
+                class="el-icon-document"
+                style="color: #8c8c8c; font-size: 18px"
+              />
+            </span>
+            <span v-else @click.stop="changeIcon(data)">
+              <svg-icon v-if="data.open" icon-class="add-s" />
+              <svg-icon v-else icon-class="sub-s" />
+            </span>
+            <span style="margin-left: 3px">{{ node.label }}</span>
+          </div>
+        </el-tree>
       </div>
     </system-dialog>
   </el-main>
@@ -163,6 +208,19 @@ export default {
         url: [{ required: true, trigger: "blur", message: "请输入组件路径" }],
         code: [{ required: true, trigger: "blur", message: "请输入权限字段" }],
       },
+      //上级菜单弹框属性
+      parentDialog: {
+        title: "选择所属菜单",
+        width: 280,
+        height: 450,
+        visible: false,
+      },
+      //树属性定义
+      defaultProps: {
+        children: "children",
+        label: "label",
+      },
+      parentMenuList: [], //所属菜单列表
     };
   },
   // 初始化时调用
@@ -192,13 +250,56 @@ export default {
      */
     openAddWindow() {
       // 清空表单数据
-      this.$resetForm("menuForm",this.menu)
+      this.$resetForm("menuForm", this.menu);
       // 设置窗口标题
       this.menuDialog.title = "新增菜单";
       // 显示窗口
       this.menuDialog.visible = true;
     },
-
+    /**
+     * 选择所属菜单取消事件
+     */
+    onParentClose() {
+      this.parentDialog.visible = false; //关闭窗口
+    },
+    /**
+     * 选择所属菜单确认事件
+     */
+    onParentConfirm() {
+      this.parentDialog.visible = false; //关闭窗口
+    },
+    /**
+     * 新增所属菜单
+     */
+    async selectParentMenu() {
+      //显示窗口
+      this.parentDialog.visible = true;
+      // 发送查询请求
+      let res = await menuApi.getParentMenuList();
+      // 判断是否成功
+      if (res.success) {
+        // 赋值
+        this.parentMenuList = res.data;
+      }
+    },
+    /**
+     * 点击树节点加减号时触发
+     * @param data
+     */
+    changeIcon(data) {
+      // 修改折叠状态
+      data.open = !data.open;
+      this.$refs.parentTree.store.nodesMap[data.id].expanded = !data.open;
+    },
+    /**
+     * 所属菜单节点点击事件
+     */
+    handleNodeClick(data) {
+      //所属父级菜单ID
+      this.menu.parentId = data.id;
+      //所属父级菜单名称
+      this.menu.parentName = data.label;
+    },
     /**
      * 关闭取消按钮点击事件
      */
