@@ -106,7 +106,31 @@
             <el-input v-model="menu.code" />
           </el-form-item>
           <el-form-item label="菜单图标" size="small">
-            <el-input v-model="menu.icon" />
+            <div class="chooseIcons">
+              <el-popover placement="bottom" width="450" trigger="click">
+                <span
+                  slot="reference"
+                  style="
+                    display: inline-block;
+                    width: 200px;
+                    height: 33px;
+                    line-height: 33px;
+                  "
+                >
+                  <i :class="userChooseIcon"></i>
+                  {{ userChooseIcon }}
+                </span>
+                <div class="iconList">
+                  <i
+                    v-for="item in iconList"
+                    :key="item"
+                    :class="item"
+                    @click="setIcon(item)"
+                    style="font-size: 20px"
+                  ></i>
+                </div>
+              </el-popover>
+            </div>
           </el-form-item>
           <el-form-item label="菜单序号" size="small">
             <el-input v-model="menu.orderNum" />
@@ -161,6 +185,8 @@
 <script>
 // 导入menu.js脚本文件
 import menuApi from "@/api/menu";
+//导入自定义的icon图标库
+import { elementIcons } from "@/utils/icons";
 
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
@@ -221,12 +247,16 @@ export default {
         label: "label",
       },
       parentMenuList: [], //所属菜单列表
+      iconList: [], // 图标列表
+      userChooseIcon: "", // 用户选中的图标
     };
   },
   // 初始化时调用
   created() {
     // 查询菜单列表
     this.search();
+    // 调用获取图标列表
+    this.getIconList();
   },
   mounted() {
     this.$nextTick(() => {
@@ -251,6 +281,8 @@ export default {
     openAddWindow() {
       // 清空表单数据
       this.$resetForm("menuForm", this.menu);
+      // 清空图标选择器
+      this.userChooseIcon = "";
       // 设置窗口标题
       this.menuDialog.title = "新增菜单";
       // 显示窗口
@@ -300,6 +332,21 @@ export default {
       //所属父级菜单名称
       this.menu.parentName = data.label;
     },
+
+    /**
+     * 查询图标列表
+     */
+    getIconList() {
+      this.iconList = elementIcons;
+    },
+    /**
+     * 设置选中的图标
+     * @param {*} data
+     */
+    setIcon(icon) {
+      this.userChooseIcon = icon; //将i的样式设为选中的样式el-icon-xxx
+      this.menu.icon = icon;
+    },
     /**
      * 关闭取消按钮点击事件
      */
@@ -322,4 +369,47 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.iconList {
+  width: 400px;
+  height: 300px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  i {
+    display: inline-block;
+    width: 60px;
+    height: 45px;
+    color: #000000;
+    font-size: 20px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 45px;
+    margin: 5px;
+    &:hover {
+      color: orange;
+      border-color: orange;
+    }
+  }
+}
+.chooseIcons {
+  width: 175px;
+  background-color: #ffffff;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+  box-sizing: border-box;
+  color: #606266;
+  display: inline-block;
+  font-size: inherit;
+  height: 33px;
+  line-height: 25px;
+  outline: none;
+  padding: 0 15px;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+</style>
