@@ -39,7 +39,24 @@
       <el-table-column prop="name" label="路由名称"></el-table-column>
       <el-table-column prop="path" label="路由地址名称"></el-table-column>
       <el-table-column prop="url" label="组件路径"></el-table-column>
-      <el-table-column label="操作" align="center"></el-table-column>
+      <el-table-column label="操作" align="center">
+        <template slot-scope="scope">
+          <el-button
+            size="small"
+            type="primary"
+            icon="el-icon-edit-outline"
+            @click="handleEdit(scope.row)"
+            >编辑</el-button
+          >
+          <el-button
+            size="small"
+            type="danger"
+            icon="el-icon-delete-solid"
+            @click="handleDelete(scope.row)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
     </el-table>
     <!-- 新增或修改窗口 -->
     <system-dialog
@@ -336,6 +353,7 @@ export default {
             res = await menuApi.addMenu(this.menu);
           } else {
             // 发送修改请求
+            res = await menuApi.updateMenu(this.menu);
           }
           // 判断是否成功
           if (res.success) {
@@ -351,6 +369,24 @@ export default {
           }
         }
       });
+    },
+
+    /**
+     * 打开编辑菜单窗口
+     * @param {*} row
+     */
+    handleEdit(row) {
+      // 数据回显
+      this.$objCopy(row, this.menu);
+
+      // 回显图标选择器
+      this.$nextTick(() => {
+        this.$refs.child.userChooseIcon = row.icon;
+      });
+      // 设置窗口标题
+      this.menuDialog.title = "编辑 菜单";
+      // 显示窗口
+      this.menuDialog.visible = true;
     },
   },
 };
