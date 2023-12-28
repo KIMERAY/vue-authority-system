@@ -388,6 +388,37 @@ export default {
       // 显示窗口
       this.menuDialog.visible = true;
     },
+
+    /**
+     * 删除菜单
+     * @param {*} row
+     */
+    async handleDelete(row) {
+      // 判断菜单下是否存在子菜单
+      let reslut = await menuApi.checkPermission({ id: row.id });
+      // 判断是否可以删除
+      if (!reslut.success) {
+        // 提示不能删除
+        this.$message.warning(reslut.message);
+      } else {
+        // 确认是否删除
+        let confirm = await this.$myconfirm("确定要删除该数据吗?");
+        if (confirm) {
+          // 发送删除请求
+          let res = await menuApi.deleteById({ id: row.id });
+          //判断是否成功
+          if (res.success) {
+            //成功提示
+            this.$message.success(res.message);
+            //刷新
+            this.search();
+          } else {
+            //失败提示
+            this.$message.error(res.message);
+          }
+        }
+      }
+    },
   },
 };
 </script>

@@ -36,4 +36,17 @@ export default {
     return await http.put("/api/permission/update", params);
   },
 
+  /**
+   * 检查菜单下是否存在子菜单
+   */
+  async checkPermission(param) {
+    return await http.getRestApi("/api/permission/check", param);
+  },
+  /**
+   * 删除菜单
+   * @returns
+   */
+  async deleteById(params) {
+    return await http.delete("/api/permission/delete", params);
+  },
 };
