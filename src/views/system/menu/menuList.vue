@@ -106,31 +106,7 @@
             <el-input v-model="menu.code" />
           </el-form-item>
           <el-form-item label="菜单图标" size="small">
-            <div class="chooseIcons">
-              <el-popover placement="bottom" width="450" trigger="click">
-                <span
-                  slot="reference"
-                  style="
-                    display: inline-block;
-                    width: 200px;
-                    height: 33px;
-                    line-height: 33px;
-                  "
-                >
-                  <i :class="userChooseIcon"></i>
-                  {{ userChooseIcon }}
-                </span>
-                <div class="iconList">
-                  <i
-                    v-for="item in iconList"
-                    :key="item"
-                    :class="item"
-                    @click="setIcon(item)"
-                    style="font-size: 20px"
-                  ></i>
-                </div>
-              </el-popover>
-            </div>
+            <my-icon @selecticon="setIcon" ref="child"/>
           </el-form-item>
           <el-form-item label="菜单序号" size="small">
             <el-input v-model="menu.orderNum" />
@@ -185,16 +161,17 @@
 <script>
 // 导入menu.js脚本文件
 import menuApi from "@/api/menu";
-//导入自定义的icon图标库
-import { elementIcons } from "@/utils/icons";
-
+//导入自定义图标组件
+import MyIcon from '@/components/system/MyIcon.vue'
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
+
 export default {
   name: "menuList",
   // 注册组件
   components: {
     SystemDialog,
+    MyIcon,
   },
   data() {
     return {
@@ -247,16 +224,12 @@ export default {
         label: "label",
       },
       parentMenuList: [], //所属菜单列表
-      iconList: [], // 图标列表
-      userChooseIcon: "", // 用户选中的图标
     };
   },
   // 初始化时调用
   created() {
     // 查询菜单列表
     this.search();
-    // 调用获取图标列表
-    this.getIconList();
   },
   mounted() {
     this.$nextTick(() => {
@@ -282,7 +255,9 @@ export default {
       // 清空表单数据
       this.$resetForm("menuForm", this.menu);
       // 清空图标选择器
-      this.userChooseIcon = "";
+      this.$nextTick(() => {
+        this.$refs.child.userChooseIcon = "";
+      });
       // 设置窗口标题
       this.menuDialog.title = "新增菜单";
       // 显示窗口
@@ -334,17 +309,10 @@ export default {
     },
 
     /**
-     * 查询图标列表
-     */
-    getIconList() {
-      this.iconList = elementIcons;
-    },
-    /**
      * 设置选中的图标
      * @param {*} data
      */
     setIcon(icon) {
-      this.userChooseIcon = icon; //将i的样式设为选中的样式el-icon-xxx
       this.menu.icon = icon;
     },
     /**
