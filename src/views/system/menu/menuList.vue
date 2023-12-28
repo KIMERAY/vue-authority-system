@@ -106,7 +106,7 @@
             <el-input v-model="menu.code" />
           </el-form-item>
           <el-form-item label="菜单图标" size="small">
-            <my-icon @selecticon="setIcon" ref="child"/>
+            <my-icon @selecticon="setIcon" ref="child" />
           </el-form-item>
           <el-form-item label="菜单序号" size="small">
             <el-input v-model="menu.orderNum" />
@@ -162,7 +162,7 @@
 // 导入menu.js脚本文件
 import menuApi from "@/api/menu";
 //导入自定义图标组件
-import MyIcon from '@/components/system/MyIcon.vue'
+import MyIcon from "@/components/system/MyIcon.vue";
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
 
@@ -327,10 +327,28 @@ export default {
      */
     onConfirm() {
       // 表单验证
-      this.$refs.menuForm.validate((valid) => {
+      this.$refs.menuForm.validate(async (valid) => {
         if (valid) {
-          // 关闭窗口
-          this.menuDialog.visible = false;
+          let res = null;
+          // 判断当前是新增操作还是修改操作
+          if (this.menu.id === "") {
+            // 发送添加请求
+            res = await menuApi.addMenu(this.menu);
+          } else {
+            // 发送修改请求
+          }
+          // 判断是否成功
+          if (res.success) {
+            // 提示成功
+            this.$message.success(res.message);
+            // 刷新数据表格
+            this.search();
+            // 关闭窗口
+            this.menuDialog.visible = false;
+          } else {
+            // 提示失败
+            this.$message.error(res.message);
+          }
         }
       });
     },

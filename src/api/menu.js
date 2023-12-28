@@ -17,4 +17,23 @@ export default {
   async getParentMenuList(params) {
     return await http.get("/api/permission/parent/list", params);
   },
+
+  /**
+   * 添加菜单
+   * @param {*} params
+   * @returns
+   */
+  async addMenu(params) {
+    return await http.post("/api/permission/add", params);
+  },
+
+  /**
+   * 编辑菜单
+   * @param {*} params
+   * @returns
+   */
+  async updateMenu(params) {
+    return await http.put("/api/permission/update", params);
+  },
+
 };
