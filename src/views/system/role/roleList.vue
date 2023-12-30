@@ -12,7 +12,12 @@
         <el-input v-model="searchModel.roleName" placeholder="请输入角色名称" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search">查询</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          @click="search(pageNo, pageSize)"
+          >查询</el-button
+        >
         <el-button icon="el-icon-refresh-right">重置</el-button>
         <el-button type="success" icon="el-icon-plus">新增</el-button>
       </el-form-item>
@@ -85,11 +90,15 @@ export default {
       // 查询条件
       searchModel: {
         roleName: "",
+        pagaNo: 1, //当前页码
+        pageSize: 10, //每页显示数量
       },
       tableHeight: 0, //表格高度
       roleList: [], //角色列表
       pageNo: 1, //当前页码
       total: 0, //数据总数量
+      pageNo: 1, //当前页码
+      pageSize: 10, //每页显示数量
     };
   },
   created() {
@@ -102,7 +111,16 @@ export default {
     });
   },
   methods: {
-    async search() {
+    /**
+     * 查询角色列表
+     * @param {*} pageNo
+     * @param {*} pageSize
+     */
+    async search(pageNo = 1, pageSize = 10) {
+      // 修改当前页码
+      this.searchModel.pageNo = pageNo;
+      // 修改每页显示数量
+      this.searchModel.pageSize = pageSize;
       // 发生查询请求
       let res = await getRoles(this.searchModel);
       // 判断是否成功
@@ -116,11 +134,21 @@ export default {
     /**
      * 当每页显示数量发生变化时触发
      */
-    handleSizeChange(size) {},
+    handleSizeChange(size) {
+      // 修改每页显示的数量
+      this.pageSize = size;
+      // 调用查询方法
+      this.search(this.pageNo, size);
+    },
     /**
      * 当页码发生变化时触发
      */
-    handleCurrentChange(page) {},
+    handleCurrentChange(page) {
+      // 修改当前页码
+      this.pageNo = page;
+      // 调用查询方法
+      this.search(page, this.pageSize);
+    },
     /**
      * 编辑角色
      */
