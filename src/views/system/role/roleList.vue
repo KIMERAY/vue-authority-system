@@ -61,22 +61,23 @@
       </el-table-column>
     </el-table>
     <!-- 分页工具栏 -->
-<el-pagination
-background
-@size-change="handleSizeChange"
-@current-change="handleCurrentChange"
-:current-page="pageNo"
-:page-sizes="[10, 20, 30, 40, 50]"
-:page-size="10"
-layout="total, sizes, prev, pager, next, jumper"
-:total="total"
->
-</el-pagination>
+    <el-pagination
+      background
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="pageNo"
+      :page-sizes="[10, 20, 30, 40, 50]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+    >
+    </el-pagination>
   </el-main>
 </template>
 
 <script>
-
+// 导入role.js的方法
+import { getRoles } from "@/api/role";
 export default {
   name: "roleList",
   data() {
@@ -84,15 +85,16 @@ export default {
       // 查询条件
       searchModel: {
         roleName: "",
-        tableHeight: 0, //表格高度
-        roleList: [], //角色列表
-        pageNo:1,//当前页码
-        total:0,//数据总数量
       },
+      tableHeight: 0, //表格高度
+      roleList: [], //角色列表
+      pageNo: 1, //当前页码
+      total: 0, //数据总数量
     };
   },
   created() {
-
+    // 调用查询角色列表的方法
+    this.search();
   },
   mounted() {
     this.$nextTick(() => {
@@ -100,43 +102,38 @@ export default {
     });
   },
   methods: {
-search(){
-
-},
-/**
- * 当每页显示数量发生变化时触发
- */
- handleSizeChange(size){
-
-},
-/**
- * 当页码发生变化时触发
- */
-handleCurrentChange(page){
-
-},
-/**
- * 编辑角色
- */
-handleEdit(row){
-
-},
-/**
- * 删除角色
- */
-handleDelete(row){
-
-},
-/**
- * 分配权限
- */
-assignRole(row){
-
-}
+    async search() {
+      // 发生查询请求
+      let res = await getRoles(this.searchModel);
+      // 判断是否成功
+      if (res.success) {
+        console.log(res);
+        // 赋值
+        this.roleList = res.data.records;
+        this.total = res.data.total;
+      }
+    },
+    /**
+     * 当每页显示数量发生变化时触发
+     */
+    handleSizeChange(size) {},
+    /**
+     * 当页码发生变化时触发
+     */
+    handleCurrentChange(page) {},
+    /**
+     * 编辑角色
+     */
+    handleEdit(row) {},
+    /**
+     * 删除角色
+     */
+    handleDelete(row) {},
+    /**
+     * 分配权限
+     */
+    assignRole(row) {},
   },
 };
 </script>
-<style lang="scss" scoped>
-
-
-</style>
+<style lang="scss" scoped></style>
