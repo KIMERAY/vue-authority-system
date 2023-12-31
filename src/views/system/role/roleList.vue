@@ -92,6 +92,7 @@ export default {
         roleName: "",
         pagaNo: 1, //当前页码
         pageSize: 10, //每页显示数量
+        userId:this.$store.getters.userId // 当前登录用户ID
       },
       tableHeight: 0, //表格高度
       roleList: [], //角色列表
