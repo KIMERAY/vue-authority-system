@@ -1,13 +1,23 @@
 <template>
   <el-main>
     <!-- 查询条件 -->
-    <el-form ref="searchForm" label-width="80px" :inline="true" size="small">
+    <el-form
+      :model="searchModel"
+      ref="searchForm"
+      label-width="80px"
+      :inline="true"
+      size="small"
+    >
       <el-form-item>
-        <el-input v-model="departmentName" placeholder="请输入部门名称" />
+        <el-input v-model="searchModel.departmentName" placeholder="请输入部门名称" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search">查询按钮</el-button>
-        <el-button icon="el-icon-refresh-right">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" @click="search()"
+          >查询</el-button
+        >
+        <el-button icon="el-icon-refresh-right" @click="resetValue()"
+          >重置</el-button
+        >
         <el-button type="success" icon="el-icon-plus" @click="openAddWindow()"
           >新增</el-button
         >
@@ -143,8 +153,6 @@
 import departmentApi from "@/api/department";
 // 导入SystemDialog组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
-import { pid } from "process";
-import { log } from "console";
 
 export default {
   name: "department",
@@ -154,7 +162,9 @@ export default {
   },
   data() {
     return {
-      departmentName: "", // 部门名称
+      searchModel: {
+        departmentName: "", // 部门名称
+      },
       tableData: [], // 表格数据
       deptDialog: {
         title: "560", // 窗口标题
@@ -207,11 +217,20 @@ export default {
      */
     async search() {
       // 发送查询请求
-      let res = await departmentApi.getDepartmentList(this.departmentName);
+      let res = await departmentApi.getDepartmentList(this.searchModel);
       // 判断是否成功
       if (res.success) {
         this.tableData = res.data;
       }
+    },
+    /**
+     * 重置查询条件
+     */
+    resetValue() {
+      // 清空数据
+      this.searchModel.departmentName = "";
+      // 重新查询
+      this.search();
     },
     /**
      * 打开添加窗口

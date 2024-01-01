@@ -18,7 +18,9 @@
           @click="search(pageNo, pageSize)"
           >查询</el-button
         >
-        <el-button icon="el-icon-refresh-right">重置</el-button>
+        <el-button icon="el-icon-refresh-right" @click="resetValue()"
+          >重置</el-button
+        >
         <el-button type="success" icon="el-icon-plus">新增</el-button>
       </el-form-item>
     </el-form>
@@ -92,7 +94,7 @@ export default {
         roleName: "",
         pagaNo: 1, //当前页码
         pageSize: 10, //每页显示数量
-        userId:this.$store.getters.userId // 当前登录用户ID
+        userId: this.$store.getters.userId, // 当前登录用户ID
       },
       tableHeight: 0, //表格高度
       roleList: [], //角色列表
@@ -149,6 +151,16 @@ export default {
       this.pageNo = page;
       // 调用查询方法
       this.search(page, this.pageSize);
+    },
+
+    /**
+     * 重置查询条件
+     */
+    resetValue() {
+      // 清空数据
+      this.searchModel.roleName = "";
+      // 重新查询
+      this.search();
     },
     /**
      * 编辑角色
