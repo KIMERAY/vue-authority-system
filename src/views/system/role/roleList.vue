@@ -21,7 +21,9 @@
         <el-button icon="el-icon-refresh-right" @click="resetValue()"
           >重置</el-button
         >
-        <el-button type="success" icon="el-icon-plus">新增</el-button>
+        <el-button type="success" icon="el-icon-plus" @click="openAddWindow()"
+          >新增</el-button
+        >
       </el-form-item>
     </el-form>
     <!-- 数据表格 -->
@@ -79,14 +81,56 @@
       :total="total"
     >
     </el-pagination>
+
+    <!-- 添加和修改角色窗口 -->
+    <system-dialog
+      :title="roleDialog.title"
+      :visible="roleDialog.visible"
+      :width="roleDialog.width"
+      :height="roleDialog.height"
+      @onClose="onClose"
+      @onConfirm="onConfirm"
+    >
+      <div slot="content">
+        <el-form
+          :model="role"
+          ref="roleForm"
+          :rules="rules"
+          label-width="80px"
+          :inline="false"
+          size="small"
+        >
+          <el-form-item label="角色编码" prop="roleCode">
+            <el-input v-model="role.roleCode"></el-input>
+          </el-form-item>
+          <el-form-item label="角色名称" prop="roleName">
+            <el-input v-model="role.roleName"></el-input>
+          </el-form-item>
+          <el-form-item label="角色描述">
+            <el-input
+              type="textarea"
+              v-model="role.remark"
+              :rows="5"
+            ></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+    </system-dialog>
   </el-main>
 </template>
 
 <script>
 // 导入role.js的方法
-import { getRoles } from "@/api/role";
+import { getRoles,addRole,updateRole } from "@/api/role";
+//导入对话框组件
+import SystemDialog from "@/components/system/SystemDialog.vue";
+import tableRouter from "@/router/modules/table";
 export default {
   name: "roleList",
+  //注册组件
+  components: {
+    SystemDialog,
+  },
   data() {
     return {
       // 查询条件
@@ -96,12 +140,37 @@ export default {
         pageSize: 10, //每页显示数量
         userId: this.$store.getters.userId, // 当前登录用户ID
       },
+      roleList: [], //角色列表
       tableHeight: 0, //表格高度
       roleList: [], //角色列表
       pageNo: 1, //当前页码
       total: 0, //数据总数量
       pageNo: 1, //当前页码
       pageSize: 10, //每页显示数量
+      // 表单验证规则
+      rules: {
+        roleCode: [
+          { required: true, trigger: "blur", message: "请输入角色编码" },
+        ],
+        roleName: [
+          { required: true, trigger: "blur", message: "请输入角色名称" },
+        ],
+      },
+      //添加和修改角色窗口属性
+      roleDialog: {
+        title: "",
+        visible: false,
+        height: 230,
+        width: 500,
+      },
+      //角色对象
+      role: {
+        id: "",
+        roleCode: "",
+        roleName: "",
+        remark: "",
+        createUser: this.$store.getters.userId,
+      },
     };
   },
   created() {
@@ -162,10 +231,67 @@ export default {
       // 重新查询
       this.search();
     },
+
+    /**
+     * 打开添加窗口
+     */
+    openAddWindow() {
+      // 清空表单数据
+      this.$resetForm("roleForm", this.role);
+      // 设置窗口标题
+      this.roleDialog.title = "新增角色";
+      // 显示窗口
+      this.roleDialog.visible = true;
+    },
+    /**
+     * 窗口取消事件
+     */
+    onClose() {
+      this.roleDialog.visible = false;
+    },
+    /**
+     * 窗口确认事件
+     */
+    onConfirm() {
+      //表单验证
+      this.$refs.roleForm.validate(async (valid) => {
+        // 验证通过
+        if (valid) {
+          // 发送添加请求
+          let res = null;
+          // 判断当前是新增还是修改
+          // 发送新增请求
+          if (this.role.id === "") {
+            res = await addRole (this.role);
+          } else {
+            // 发送修改请求
+            res = await updateRole(this.role);
+          }
+          // 判断是否成功
+          if (res.success) {
+            // 提示成功
+            this.$message.success(res.message);
+            // 刷新数据
+            this.search();
+            // 关闭窗口
+            this.roleDialog.visible = false;
+          } else {
+            // 提示失败
+            this.$message.error(res.message);
+          }
+        }
+      });
+    },
     /**
      * 编辑角色
      */
-    handleEdit(row) {},
+    handleEdit(row) {
+      // 数据回显
+      this.$objCopy(row, this.role);// 将当前编辑的数据复制到role对象中
+      // 设置窗口标题
+      this.roleDialog.title = "编辑角色";
+      // 显示编辑角色窗口
+      this.roleDialog.visible = true;},
     /**
      * 删除角色
      */
