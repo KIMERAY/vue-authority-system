@@ -121,7 +121,13 @@
 
 <script>
 // 导入role.js的方法
-import { getRoles,addRole,updateRole } from "@/api/role";
+import {
+  getRoles,
+  addRole,
+  updateRole,
+  checkRole,
+  deleteRole,
+} from "@/api/role";
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
 import tableRouter from "@/router/modules/table";
@@ -262,7 +268,7 @@ export default {
           // 判断当前是新增还是修改
           // 发送新增请求
           if (this.role.id === "") {
-            res = await addRole (this.role);
+            res = await addRole(this.role);
           } else {
             // 发送修改请求
             res = await updateRole(this.role);
@@ -272,7 +278,7 @@ export default {
             // 提示成功
             this.$message.success(res.message);
             // 刷新数据
-            this.search();
+            this.search(this.pageNo,this.pageSize);
             // 关闭窗口
             this.roleDialog.visible = false;
           } else {
@@ -287,15 +293,41 @@ export default {
      */
     handleEdit(row) {
       // 数据回显
-      this.$objCopy(row, this.role);// 将当前编辑的数据复制到role对象中
+      this.$objCopy(row, this.role); // 将当前编辑的数据复制到role对象中
       // 设置窗口标题
       this.roleDialog.title = "编辑角色";
       // 显示编辑角色窗口
-      this.roleDialog.visible = true;},
+      this.roleDialog.visible = true;
+    },
     /**
      * 删除角色
      */
-    handleDelete(row) {},
+    async handleDelete(row) {
+      // 查询角色是否被使用
+      let reslut = await checkRole({ id: row.id });
+      // 判断是否可以删除
+      if (!reslut.success) {
+        // 提示不能删除
+        this.$message.warning(reslut.message);
+      } else {
+        // 确认是否删除
+        let confirm = await this.$myconfirm("确定要删除该数据吗?");
+        if (confirm) {
+          // 发送删除请求
+          let res = await deleteRole({ id: row.id });
+          //判断是否成功
+          if (res.success) {
+            //成功提示
+            this.$message.success(res.message);
+            //刷新
+            this.search(this.pageNo, this.pageSize);
+          } else {
+            //失败提示
+            this.$message.error(res.message);
+          }
+        }
+      }
+    },
     /**
      * 分配权限
      */

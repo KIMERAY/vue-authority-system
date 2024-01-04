@@ -27,5 +27,20 @@ export async function addRole(data) {
 export async function updateRole(data) {
   return await http.put("/api/role/update", data);
 }
+/**
+ * 检查角色是否被使用
+ * @param {} params
+ * @returns
+ */
+export async function checkRole(params) {
+  return await http.getRestApi("/api/role/check", params);
+}
 
-export function deleteRole(id) {}
+/**
+ * 删除角色
+ * @param {*} params
+ * @returns
+ */
+export async function deleteRole(params) {
+  return await http.delete("/api/role/delete", params);
+}

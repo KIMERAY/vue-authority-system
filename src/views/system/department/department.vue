@@ -273,7 +273,7 @@ export default {
             // 提示成功
             this.$message.success(res.message);
             // 刷新数据
-            this.search();
+            this.search(this.pageNo,this.pageSize);
             // 关闭窗口
             this.deptDialog.visible = false;
           } else {
@@ -366,7 +366,7 @@ export default {
             //成功提示
             this.$message.success(res.message);
             //刷新
-            this.search();
+            this.search(this.pageNo,this.pageSize);
           } else {
             //失败提示
             this.$message.error(res.message);
