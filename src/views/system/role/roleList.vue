@@ -116,6 +116,29 @@
         </el-form>
       </div>
     </system-dialog>
+
+    <!-- 分配权限树窗口 -->
+    <system-dialog
+      :title="assignDialog.title"
+      :visible="assignDialog.visible"
+      :width="assignDialog.width"
+      :height="assignDialog.height"
+      @onClose="onAssignClose"
+      @onConfirm="onAssignConfirm"
+    >
+      <div slot="content">
+        <el-tree
+          ref="assignTree"
+          :data="assignTreeData"
+          node-key="id"
+          :props="defaultProps"
+          empty-text="暂无数据"
+          :show-checkbox="true"
+          :highlight-current="true"
+          default-expand-all
+        ></el-tree>
+      </div>
+    </system-dialog>
   </el-main>
 </template>
 
@@ -127,10 +150,13 @@ import {
   updateRole,
   checkRole,
   deleteRole,
+  getAssignTree,
 } from "@/api/role";
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
-import tableRouter from "@/router/modules/table";
+//导入末级节点脚本
+import leafUtils from "@/utils/leaf";
+
 export default {
   name: "roleList",
   //注册组件
@@ -176,6 +202,20 @@ export default {
         roleName: "",
         remark: "",
         createUser: this.$store.getters.userId,
+      },
+      //分配权限窗口属性
+      assignDialog: {
+        title: "",
+        visible: false,
+        height: 450,
+        width: 300,
+      },
+      roleId: "", //角色ID
+      assignTreeData: [], //树节点数据
+      //树节点属性
+      defaultProps: {
+        children: "children",
+        label: "label",
       },
     };
   },
@@ -278,7 +318,7 @@ export default {
             // 提示成功
             this.$message.success(res.message);
             // 刷新数据
-            this.search(this.pageNo,this.pageSize);
+            this.search(this.pageNo, this.pageSize);
             // 关闭窗口
             this.roleDialog.visible = false;
           } else {
@@ -331,7 +371,84 @@ export default {
     /**
      * 分配权限
      */
-    assignRole(row) {},
+    async assignRole(row) {
+      // 构建查询参数
+      let params = {
+        roleId: row.id, //角色ID
+        userId: this.$store.getters.userId, //用户ID
+      };
+      // 发送请求
+      let res = await getAssignTree(params);
+      // 判断是否成功
+      if (res.success) {
+        // 获取到当前登录用户所拥有的所有菜单权限
+        let { permissionList } = res.data;
+        // 获取当前被分配角色的已经拥有的菜单权限
+        let { checkList } = res.data;
+        // 判断当前菜单是否是最后一级
+        let { setLeaf } = leafUtils();
+        // 设置权限菜单列表
+        let newPermissionList = setLeaf(permissionList);
+        // 设置树节点菜单数据
+        this.assignTreeData = newPermissionList;
+        // 将回调延迟到下一次DOM更新循环之后执行，在修改数据之后立即调用该方法，然后等待DOM更新
+        this.$nextTick(() => {
+          // 获取菜单节点数据
+          let nodes = this.$refs.assignTree.children;
+          // 设置子节点
+          this.setChild(nodes, checkList);
+        });
+      }
+
+      // 设置窗口标题
+      this.assignDialog.title = `给[${row.roleName}]分配权限`;
+      // 显示窗口
+      this.assignDialog.visible = true;
+    },
+
+    /**
+     * 设置子节点
+     * @param {*} nodes
+     * @param {*} checkList
+     */
+    setChild(childNodes, checkList) {
+      // 判断是否存在子节点
+      if (childNodes && childNodes.length > 0) {
+        // 循环所有权限
+        for (let i = 0; i < childNodes.length; i++) {
+          // 根据data或key获取树组件中的node节点
+          let node = this.$refs.assignTree.getNode(childNodes[i]);
+          // 判断是否已经拥有对应的角色权限数据
+          if (checkList && checkList.length > 0) {
+            // 循环遍历已有的权限集合
+            for (let j = 0; j < checkList.length; j++) {
+              // 判断权限id是否相等
+              if (childNodes[i].id === checkList[j]) {
+                // 判断节点的状态，如果当前节点是展开的，则将树节点选中
+                if (childNodes[i].open) {
+                  this.$refs.assignTree.setChecked(node, true);
+                  break;
+                }
+              }
+            }
+          }
+          // 判断如果存在子节点，则递归选中
+          if (childNodes[i].children) {
+            this.setChild(childNodes[i].children, checkList);
+          }
+        }
+      }
+    },
+    /**
+     * 分配权限窗口取消事件
+     */
+    onAssignClose() {
+      this.assignDialog.visible = false;
+    },
+    /**
+     * 分配权限窗口确认事件
+     */
+    async onAssignConfirm() {},
   },
 };
 </script>
