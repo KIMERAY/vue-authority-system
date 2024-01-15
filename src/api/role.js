@@ -46,9 +46,17 @@ export async function deleteRole(params) {
 }
 
 /**
-* 查询分配权限树列表
-* @returns
-*/
-export async function getAssignTree(params){
-  return await http.get("/api/role/getAssignPermissionTree",params);
-  }
+ * 查询分配权限树列表
+ * @returns
+ */
+export async function getAssignTree(params) {
+  return await http.get("/api/role/getAssignPermissionTree", params);
+}
+
+/**
+ * 分配权限
+ * @returns
+ */
+export async function assignSave(params) {
+  return await http.post("/api/role/saveRoleAssign", params);
+}

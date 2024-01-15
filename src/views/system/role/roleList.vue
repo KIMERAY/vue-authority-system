@@ -151,6 +151,7 @@ import {
   checkRole,
   deleteRole,
   getAssignTree,
+  assignSave,
 } from "@/api/role";
 //导入对话框组件
 import SystemDialog from "@/components/system/SystemDialog.vue";
@@ -372,6 +373,8 @@ export default {
      * 分配权限
      */
     async assignRole(row) {
+      // 将roleId赋值
+      this.roleId = row.id;
       // 构建查询参数
       let params = {
         roleId: row.id, //角色ID
@@ -448,7 +451,30 @@ export default {
     /**
      * 分配权限窗口确认事件
      */
-    async onAssignConfirm() {},
+    async onAssignConfirm() {
+      // 获取选中的树节点的key
+      let ids = this.$refs.assignTree.getCheckedKeys();
+      // 获取选中节点的父节点ID
+      let pids = this.$refs.assignTree.getHalfCheckedKeys();
+      // 组装选中接电脑的ID数据
+      let listId = ids.concat(pids);
+      // 组装参数
+      let params = {
+        roleId: this.roleId,
+        list: listId, //选中的节点ID列表
+      };
+      // 发送请求
+      let res = await assignSave(params);
+      // 判断是否成功
+      if (res.success) {
+        // 关闭窗口
+        this.assignDialog.visible = false;
+        // 提示成功
+        this.$message.success(res.message);
+      } else {
+        this.$message.error(res.message);
+      }
+    },
   },
 };
 </script>
