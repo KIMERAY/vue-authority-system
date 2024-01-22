@@ -1,4 +1,4 @@
-import http from '@/utils/request'
+import http from "@/utils/request";
 
 /**
  * 用户登录方法
@@ -6,7 +6,7 @@ import http from '@/utils/request'
  * @returns
  */
 export async function login(data) {
-  return await http.login("/api/user/login",data);
+  return await http.login("/api/user/login", data);
 }
 /**
  * 获取登录用户信息
@@ -22,26 +22,31 @@ export async function getInfo() {
  * @returns
  */
 export async function logout(params) {
-  return await http.post("/api/sysUser/logout",params);
+  return await http.post("/api/sysUser/logout", params);
 }
 
 /**
  * 获取用户菜单信息
  */
-export async function getMenuList(){
-return await http.get("/api/sysUser/getMenuList");
+export async function getMenuList() {
+  return await http.get("/api/sysUser/getMenuList");
 }
 
-
-export default{
-
+export default {
   /**
    * 查询用户列表
    * @param {*} params
    * @returns
    */
-  async getUserList(params)
-  {
-    return await http.get("/api/user/list",params);
-  }
-}
+  async getUserList(params) {
+    return await http.get("/api/user/list", params);
+  },
+  /**
+   * 添加用户
+   * @param params
+   * @returns
+   */
+  async addUser(params) {
+    return await http.post("/api/user/add", params);
+  },
+};

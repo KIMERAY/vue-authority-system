@@ -20,7 +20,7 @@
         :show-checkbox="false"
         :highlight-current="true"
         :expand-on-click-node="false"
-        @node-click="handleNodeClick"
+        @node-click="handleNodeClike"
       >
         <div class="custom-tree-node" slot-scope="{ node, data }">
           <div>
@@ -135,6 +135,96 @@
         :total="total"
       >
       </el-pagination>
+
+      <!-- 添加和编辑用户窗口 -->
+      <system-dialog
+        :title="userDialog.title"
+        :height="userDialog.height"
+        :width="userDialog.width"
+        :visible="userDialog.visible"
+        @onClose="onClose"
+        @onConfirm="onConfirm"
+      >
+        <div slot="content">
+          <el-form
+            :model="user"
+            ref="userForm"
+            :rules="rules"
+            label-width="80px"
+            :inline="true"
+            size="small"
+          >
+            <el-form-item prop="username" label="用户名">
+              <el-input v-model="user.username"></el-input>
+            </el-form-item>
+            <el-form-item prop="password" v-if="user.id === ''" label="密码">
+              <el-input type="password" v-model="user.password"></el-input>
+            </el-form-item>
+            <el-form-item prop="departmentName" label="所属部门">
+              <el-input
+                v-model="user.departmentName"
+                :readonly="true"
+                @click.native="selectDepartment()"
+              ></el-input>
+            </el-form-item>
+            <el-form-item prop="realName" label="姓名">
+              <el-input v-model="user.realName"></el-input>
+            </el-form-item>
+            <el-form-item prop="phone" label="电话">
+              <el-input v-model="user.phone"></el-input>
+            </el-form-item>
+            <el-form-item label="昵称">
+              <el-input v-model="user.nickName"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱">
+              <el-input v-model="user.email"></el-input>
+            </el-form-item>
+            <el-form-item prop="gender" label="性别">
+              <el-radio-group v-model="user.gender">
+                <el-radio :label="0">男</el-radio>
+                <el-radio :label="1">女</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <br />
+            <!-- 用户头像：待补充 -->
+          </el-form>
+        </div>
+      </system-dialog>
+
+      <!-- 所属部门弹框 -->
+      <system-dialog
+        :title="parentDialog.title"
+        :width="parentDialog.width"
+        :height="parentDialog.height"
+        :visible="parentDialog.visible"
+        @onClose="onParentClose"
+        @onConfirm="onParentConfirm"
+      >
+        <div slot="content">
+          <el-tree
+            ref="parentTree"
+            :data="parentList"
+            default-expand-all
+            node-key="id"
+            :props="parentProps"
+            :show-checkbox="false"
+            :highlight-current="true"
+            :expand-on-click-node="false"
+            @node-click="parentClick"
+          >
+            <div class="customer-tree-node" slot-scope="{ node, data }">
+              <span v-if="data.children.length == 0">
+                <i class="el-icon-document" />
+              </span>
+              <span v-else @click.stop="openParentBtn(data)">
+                <svg-icon v-if="data.open" icon-class="add-s" />
+                <svg-icon v-else icon-class="sub-s" />
+              </span>
+              <span style="margin-left: 3px">{{ node.label }}</span>
+            </div>
+          </el-tree>
+        </div>
+      </system-dialog>
     </el-main>
   </el-container>
 </template>
@@ -144,10 +234,26 @@
 import departmentApi from "@/api/department";
 // 导入user.js脚本文件
 import userApi from "@/api/user";
+//导入对话框组件
+import SystemDialog from "@/components/system/SystemDialog.vue";
 
 export default {
   name: "userList",
+  components: {
+    SystemDialog,
+  },
   data() {
+    //自定义验证规则
+    let validatePhone = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error("请输入手机号码"));
+        //使用正则表达式进行验证手机号码
+      } else if (!/^1[3456789]\d{9}$/.test(value)) {
+        callback(new Error("手机号格式不正确"));
+      } else {
+        callback();
+      }
+    };
     return {
       containerHeight: 0, //容器高度
       deptList: [], //部门列表
@@ -170,6 +276,55 @@ export default {
       pageSize: 10, //每页显示数量
       total: 0, //总数量
       departmentId: "", //部门编号
+
+      //添加和修改用户窗口属性
+      userDialog: {
+        title: "",
+        height: 410,
+        width: 610,
+        visible: false,
+      },
+      //用户对象
+      user: {
+        id: "",
+        departmentId: "",
+        departmentName: "",
+        email: "",
+        realName: "",
+        phone: "",
+        nickName: "",
+        password: "",
+        username: "",
+        gender: "",
+        avatar: "",
+      },
+      rules: {
+        departmentName: [
+          { required: true, trigger: "change", message: "请选择所属部门" },
+        ],
+        realName: [{ required: true, trigger: "blur", message: "请填写姓名" }],
+        phone: [{ trigger: "blur", validator: validatePhone }],
+        username: [
+          { required: true, trigger: "blur", message: "请填写登录名" },
+        ],
+        password: [
+          { required: true, trigger: "blur", message: "请填写登录密码" },
+        ],
+        gender: [{ required: true, trigger: "change", message: "请选择性别" }],
+      },
+      //选择所属部门窗口属性
+      parentDialog: {
+        title: "选择所属部门",
+        width: 300,
+        height: 450,
+        visible: false,
+      },
+      //树节点属性
+      parentProps: {
+        children: "children",
+        label: "departmentName",
+      },
+      parentList: [], //所属部门节点数据
     };
   },
   // 初始化时调用
@@ -213,7 +368,7 @@ export default {
      * @param data
      */
     handleNodeClike(data) {
-      // 将但钱选择的节点ID赋值给departmentId
+      // 将当前选择的节点ID赋值给departmentId
 
       this.departmentId = data.id;
       // 查询用户信息
@@ -234,7 +389,7 @@ export default {
       if (res.success) {
         // 赋值
         this.userList = res.data.records;
-        thisi.total = res.data.total;
+        this.total = res.data.total;
       }
     },
 
@@ -272,7 +427,93 @@ export default {
     /**
      * 打开添加窗口
      */
-    openAddWindow() {},
+    openAddWindow() {
+      // 清空表单数据
+      this.$resetForm("userForm", this.user);
+      // 设置窗口标题
+      this.userDialog.title = "新增用户";
+      // 设置显示窗口
+      this.userDialog.visible = true;
+    },
+    /**
+     * 新增或编辑取消事件
+     */
+    onClose() {
+      this.userDialog.visible = false; //关闭窗口
+    },
+    /**
+     * 新增或编辑确认事件
+     */
+    onConfirm() {
+      //表单验证
+      this.$refs.userForm.validate(async (valid) => {
+        // 如果验证通过
+        if (valid) {
+          let res = null;
+          // 判断当前是新增还是修改
+          if (this.user.id === "") {
+            // 发送添加请求
+            res = await userApi.addUser(this.user);
+          } else {
+            // 发送修改请求
+          }
+          //判断是否成功
+          if (res.success) {
+            // 提示
+            this.$message.success(res.message);
+            //刷新
+            this.search(this.departmentId, this.pageNo, this.pageSize);
+            //关闭窗口
+            this.userDialog.visible = false;
+          } else {
+            // 提示
+            this.$message.error(res.message);
+          }
+        }
+      });
+    },
+    /**
+     * 打开选择所属部门窗口
+     */
+    async selectDepartment() {
+      // 发送查询请求
+      let res = await departmentApi.getParentTreeList();
+      // 判断是否成功
+      if (res.success) {
+        this.parentList = res.data;
+      }
+      // 显示窗口
+      this.parentDialog.visible = true;
+    },
+
+    /**
+     * 选择所属部门取消事件
+     */
+    onParentClose() {
+      this.parentDialog.visible = false; //关闭窗口
+    },
+    /**
+     * 选择所属部门确认事件
+     */
+    onParentConfirm() {
+      this.parentDialog.visible = false;
+    },
+    /**
+     * 所属部门树节点点击事件
+     * @param {*} data
+     */
+    parentClick(data) {
+      this.user.departmentId = data.id;
+      this.user.departmentName = data.departmentName;
+    },
+    /**
+     * 所属部门树加号 减号 图标点击事件
+     * @param {*} data
+     */
+    openParentBtn(data) {
+      data.open = !data.open;
+      this.$refs.parentTree.store.nodesMap[data.id].expanded = !data.open;
+    },
   },
 };
 </script>
