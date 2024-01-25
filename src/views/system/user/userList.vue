@@ -475,6 +475,7 @@ export default {
             res = await userApi.addUser(this.user);
           } else {
             // 发送修改请求
+            res = await userApi.updateUser(this.user);
           }
           //判断是否成功
           if (res.success) {
@@ -559,6 +560,18 @@ export default {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
       return isJPG && isLt2M;
+    },
+    /**
+     * 打开编辑窗口
+     * @param {*} row
+     */
+    handleEdit(row) {
+      //设置弹框属性
+      this.userDialog.title = "编辑用户";
+      this.userDialog.visible = true;
+      //把当前编辑的数据复制到表单数据域，
+      // 数据回显
+      this.$objCopy(row, this.user);
     },
   },
 };

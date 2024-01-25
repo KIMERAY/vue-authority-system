@@ -49,4 +49,13 @@ export default {
   async addUser(params) {
     return await http.post("/api/user/add", params);
   },
+
+  /**
+   * 修改用户
+   * @param params
+   * @returns
+   */
+  async updateUser(params) {
+    return await http.put("/api/user/update", params);
+  },
 };
