@@ -391,7 +391,7 @@ export default {
 
       this.departmentId = data.id;
       // 查询用户信息
-      this.search(this.departmentId);
+      this.search(this.departmentId, 1, 10);
     },
 
     /**
@@ -572,6 +572,29 @@ export default {
       //把当前编辑的数据复制到表单数据域，
       // 数据回显
       this.$objCopy(row, this.user);
+    },
+
+    /**
+     * 删除用户
+     */
+    async handleDelete(row) {
+      // 提示是否确认删除
+      let confirm = await this.$myconfirm("确定要删除该用户吗？");
+      // 如果确认
+      if (confirm) {
+        // 发送删除请求
+        let res = await userApi.deleteUser({ id: row.id });
+        // 判断是否成功
+        if (res.success) {
+          // 提示用户
+          this.$message.success(res.message);
+          // 刷新数据
+          this.search(this.departmentId, this.pageNo, this.pageSize);
+        } else {
+          // 提示用户
+          this.$message.error(res.message);
+        }
+      }
     },
   },
 };

@@ -58,4 +58,13 @@ export default {
   async updateUser(params) {
     return await http.put("/api/user/update", params);
   },
+
+  /**
+   * 删除用户
+   * @param params
+   * @returns
+   */
+  async deleteUser(params) {
+    return await http.delete("/api/user/delete", params);
+  },
 };
