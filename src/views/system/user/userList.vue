@@ -238,6 +238,50 @@
           </el-tree>
         </div>
       </system-dialog>
+
+      <!-- 分配角色窗口 -->
+      <system-dialog
+        :title="assignDialog.title"
+        :height="assignDialog.height"
+        :width="assignDialog.width"
+        :visible="assignDialog.visible"
+        @onClose="onAssignClose"
+        @onConfirm="onAssignConfirm"
+      >
+        <div slot="content">
+          <!-- 分配角色数据列表 -->
+          <el-table
+            ref="assignRoleTable"
+            :data="assignRoleList"
+            border
+            stripe
+            :height="assignHeight"
+            style="width: 100%; margin-bottom: 10px"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column
+              type="selection"
+              width="55"
+              align="center"
+            ></el-table-column>
+            <el-table-column prop="roleCode" label="角色编码" />
+            <el-table-column prop="roleName" label="角色名称" />
+            <el-table-column prop="remark" label="角色备注" />
+          </el-table>
+          <!-- 分页工具栏 -->
+          <el-pagination
+            @size-change="assignSizeChange"
+            @current-change="assignCurrentChange"
+            :current-page.sync="roleVo.pageNo"
+            :page-sizes="[10, 20, 30, 40, 50]"
+            :page-size="roleVo.pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="roleVo.total"
+            background
+          >
+          </el-pagination>
+        </div>
+      </system-dialog>
     </el-main>
   </el-container>
 </template>
@@ -251,6 +295,8 @@ import userApi from "@/api/user";
 import SystemDialog from "@/components/system/SystemDialog.vue";
 //导入auth.js脚本
 import { getToken } from "@/utils/auth";
+import ItemVue from "@/layout/components/Sidebar/Item.vue";
+import jsonEditorVue from "@/views/components-demo/json-editor.vue";
 
 export default {
   name: "userList",
@@ -344,6 +390,24 @@ export default {
       uploadHeader: {
         token: getToken(),
       },
+      //分配角色窗口属性
+      assignDialog: {
+        title: "",
+        visible: false,
+        width: 800,
+        height: 410,
+      },
+      //角色对象
+      roleVo: {
+        pageNo: 1,
+        pageSize: 10,
+        userId: "",
+        total: 0,
+      },
+      assignRoleList: [], //角色列表
+      assignHeight: 0, //分配角色表格高度
+      selectedIds: [], //被选中的角色id
+      selectedUserId: "", //被分配角色的用户ID
     };
   },
   // 初始化时调用
@@ -359,6 +423,8 @@ export default {
       this.containerHeight = window.innerHeight - 85;
       //表格高度
       this.tableHeight = window.innerHeight - 220;
+      //角色表格高度
+      this.assignHeight = window.innerHeight - 350;
     });
   },
   methods: {
@@ -595,6 +661,100 @@ export default {
           this.$message.error(res.message);
         }
       }
+    },
+
+    /**
+     * 分配角色
+     * @param {*} row
+     */
+    async assignRole(row) {
+      //清空角色列表数组
+      this.selectedIds = [];
+      // 将被分配角色的用户ID赋值给
+      this.selectedUserId = row.id;
+      //显示窗口
+      this.assignDialog.visible = true;
+      //设置标题
+      this.assignDialog.title = `给【${row.realName}】分配角色`;
+      // 调用查询角色列表的方法
+
+      await this.getAssignRoleList();
+      // 封装查询条件
+      let params = { userId: row.id };
+      // 发送根据用户ID查询用户角色列表的请求
+      let res = await userApi.getRoleIdByUserId(params);
+      // 如果存在数据
+      if (res.success && res.data) {
+        // 将查询到的角色Id列表赋值给选中角色的数组
+        this.selectedIds = res.data;
+        // 循环遍历
+        this.selectedIds.forEach((key) => {
+          this.assignRoleList.forEach((item) => {
+            // 如果两者的角色ID存在一致的，则将其选中
+            if (key === item.id) {
+              this.$refs.assignRoleTable.toggleRowSelection(item, true);
+            }
+          });
+        });
+      }
+    },
+    /**
+     * 当前登录用户的所拥有的角色信息
+     * @param {*} pageNo
+     * @param {*} pageSize
+     */
+    async getAssignRoleList(pageNo = 1, pageSize = 10) {
+      // 封装查询条件
+      this.roleVo.userId = this.$store.getters.userId;
+      this.roleVo.pageNo = pageNo;
+      this.roleVo.pageSize = pageSize;
+      // 发送查询请求
+      let res = await userApi.getAssignRoleList(this.roleVo);
+      // 判断是否成功
+      if (res.success) {
+        // 赋值
+        this.assignRoleList = res.data.records;
+        this.roleVo.total = res.data.total;
+      }
+    },
+    /**
+     * 分配角色取消事件
+     */
+    onAssignClose() {
+      //隐藏窗口
+      this.assignDialog.visible = false;
+    },
+    /**
+     * 分配角色确认事件
+     */
+    onAssignConfirm() {
+      //隐藏窗口
+      this.assignDialog.visible = false;
+    },
+
+    /**
+     * 复选框选中事件
+     * @param {*} rows
+     */
+    handleSelectionChange(rows) {},
+
+    /**
+     * 当每页显示数量发生变化时触发
+     * @param {*} size
+     */
+    assignSizeChange(size) {
+      this.roleVo.pageSize = size; //将每页显示的数量交给成员变量
+      this.getAssignRoleList(this.roleVo.pageNo, size);
+    },
+
+    /**
+     * 当当前页码发生变化时触发
+     * @param {*} page
+     */
+    assignCurrentChange(page) {
+      this.roleVo.pageNo = page;
+      //调用查询方法
+      this.getAssignRoleList(page, this.roleVo.pageSize);
     },
   },
 };
