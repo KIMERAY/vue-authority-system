@@ -84,4 +84,10 @@ export default {
   async getRoleIdByUserId(params) {
     return await http.getRestApi("/api/user/getRoleByUserId", params);
   },
+  /**
+   * 分配角色
+   */
+  async assignRoleSave(params) {
+    return await http.post("/api/user/saveUserRole", params);
+  },
 };

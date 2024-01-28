@@ -727,16 +727,37 @@ export default {
     /**
      * 分配角色确认事件
      */
-    onAssignConfirm() {
-      //隐藏窗口
-      this.assignDialog.visible = false;
+    async onAssignConfirm() {
+      // 判断当前是否有选中角色
+      if (this.selectedIds.length === 0) {
+        this.$message.warning("请选择要分配的角色！");
+        return;
+      }
+      // 分装条件对象
+      let params = {
+        userId: this.selectedUserId,
+        roleIds: this.selectedIds,
+      };
+      // 发送把偶才能用户角色的请求
+      let res = await userApi.assignRoleSave(params);
+      //判断是否成功
+      if (res.success) {
+        this.$message.success(res.message);
+        //关闭窗口
+        this.assignDialog.visible = false;
+      } else {
+        this.$message.error(res.message);
+      }
     },
 
     /**
      * 复选框选中事件
      * @param {*} rows
      */
-    handleSelectionChange(rows) {},
+    handleSelectionChange(rows) {
+      // 将选中的角色ID值赋值给selectIds
+      this.selectedIds = rows.map((item) => item.id);
+    },
 
     /**
      * 当每页显示数量发生变化时触发
