@@ -32,6 +32,14 @@ export async function getMenuList() {
   return await http.get("/api/sysUser/getMenuList");
 }
 
+/**
+ * 刷新token
+ * @returns
+ */
+export async function refreshTokenApi(params) {
+  return await http.post("/api/sysUser/refreshToken", params);
+}
+
 export default {
   /**
    * 查询用户列表
