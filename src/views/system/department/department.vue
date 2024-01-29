@@ -9,7 +9,10 @@
       size="small"
     >
       <el-form-item>
-        <el-input v-model="searchModel.departmentName" placeholder="请输入部门名称" />
+        <el-input
+          v-model="searchModel.departmentName"
+          placeholder="请输入部门名称"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="search()"
@@ -18,7 +21,11 @@
         <el-button icon="el-icon-refresh-right" @click="resetValue()"
           >重置</el-button
         >
-        <el-button type="success" icon="el-icon-plus" @click="openAddWindow()"
+        <el-button
+          type="success"
+          icon="el-icon-plus"
+          @click="openAddWindow()"
+          v-if="hasPermission('sys:department:add')"
           >新增</el-button
         >
       </el-form-item>
@@ -55,6 +62,8 @@
             type="primary"
             icon="el-icon-edit-outline"
             @click="handleEdit(scope.row)"
+            v-if="hasPermission('sys:department:edit')"
+
             >编辑</el-button
           >
           <el-button
@@ -273,7 +282,7 @@ export default {
             // 提示成功
             this.$message.success(res.message);
             // 刷新数据
-            this.search(this.pageNo,this.pageSize);
+            this.search(this.pageNo, this.pageSize);
             // 关闭窗口
             this.deptDialog.visible = false;
           } else {
@@ -366,7 +375,7 @@ export default {
             //成功提示
             this.$message.success(res.message);
             //刷新
-            this.search(this.pageNo,this.pageSize);
+            this.search(this.pageNo, this.pageSize);
           } else {
             //失败提示
             this.$message.error(res.message);
